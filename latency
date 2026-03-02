@@ -1,0 +1,45 @@
+import pygame
+import time
+
+pygame.init()
+pygame.joystick.init()
+
+if pygame.joystick.get_count() == 0:
+    print("❌ No joystick found.")
+    exit()
+
+wheel = pygame.joystick.Joystick(0)
+wheel.init()
+
+print(f"🚀 LOW LATENCY MODE: {wheel.get_name()}")
+print("Math is running at 1000+ Hz. Screen updates at 10Hz.")
+
+# Counter to limit print speed without limiting math speed
+loop_count = 0
+
+try:
+    while True:
+        # 1. OPTIMIZATION: Clear the event queue instantly
+        # This dumps all old data so you only get the newest state
+        pygame.event.get()
+
+        # 2. Read Data (Happens instantly)
+        steering = wheel.get_axis(0)
+        gas = wheel.get_axis(2)
+        brake = wheel.get_axis(3)
+
+        # --- YOUR CONTROL LOGIC GOES HERE ---
+        # (e.g., Send_UDP_Packet(steering, gas, brake))
+        # This part runs at full speed!
+        
+        # 3. OPTIMIZATION: Only print every 100th loop
+        # This prevents VS Code terminal from freezing/lagging
+        loop_count += 1
+        if loop_count >= 100:
+            print(f"Steer: {steering:.3f} | Gas: {gas:.3f} | Brake: {brake:.3f}", end="\r")
+            loop_count = 0
+            
+        # NO SLEEP! We run as fast as the M1 chip allows.
+
+except KeyboardInterrupt:
+    print("\nStopped.")
